@@ -9,6 +9,8 @@ import com.vendas.vendas.Service.ClienteService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
@@ -23,6 +25,27 @@ import org.springframework.web.bind.annotation.*;
 public class ClienteController {
 
     private final ClienteService service;
+
+    @GetMapping
+    public ResponseEntity buscar(
+            @RequestParam(value = "nome", required = false) String nome,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "id") UUID id
+        ) {
+            // Validação para verificar se realmente existe usuário, pois é obrigatório preencher.
+            Optional<ClienteEntity> cliente = service.obterPorId(id);
+            if (!cliente.isPresent()) {
+                return ResponseEntity.badRequest().body("Não foi possível realizar a consulta. Id cliente não encontrado.");
+            }
+
+            ClienteEntity clienteFiltro = new ClienteEntity();
+            clienteFiltro.setNome(nome);
+            clienteFiltro.setEmail(email);
+
+            List<ClienteEntity> clientes = service.buscar(clienteFiltro);
+
+            return ResponseEntity.ok(clientes);
+    }
 
     @GetMapping("/{cpfcnpj}/outro-dados-cliente")
     public ResponseEntity outroModoRetornaDadosCliente(@PathVariable(value = "cpfcnpj") String cpfcnpj) {

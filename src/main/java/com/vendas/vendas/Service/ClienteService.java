@@ -1,5 +1,6 @@
 package com.vendas.vendas.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +15,8 @@ public interface ClienteService {
     ClienteEntity retornaDadosCliente(String string);
     
     Optional<ClienteEntity> obterPorId(UUID id);
+
+    List<ClienteEntity> buscar(ClienteEntity clienteFiltro);
     
     void validarJaExisteCpfCnpj(String cpfCnpj);
 }

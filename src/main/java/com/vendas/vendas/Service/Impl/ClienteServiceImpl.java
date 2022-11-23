@@ -5,12 +5,16 @@ import com.vendas.vendas.Modelo.Entity.ClienteEntity;
 import com.vendas.vendas.Modelo.Enums.StatusCadastroEnum;
 import com.vendas.vendas.Modelo.Repository.ClienteRepository;
 import com.vendas.vendas.Service.ClienteService;
+
+import org.springframework.data.domain.Example;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -86,6 +90,20 @@ public class ClienteServiceImpl implements ClienteService {
         if (cliente.getEmail() == null || cliente.getEmail().toString().length() <= 15) {
             throw new RegraNegocioException("Informe um E-mail válido.");
         }
+    }
+
+    @Override
+    public List<ClienteEntity> buscar(ClienteEntity clienteFiltro) {
+        // Segundo parametro é opcional
+        // withIgnoreCase -> Tanto faz se o usuário passou em caixa alta ou baixa.
+        // withStringMatcher -> Forma que irá buscar as informações no banco de dados "Encontrar todos os lançamentos que contenha a letra A no meio por exemplo"
+        Example example = Example.of(clienteFiltro,
+                ExampleMatcher.matching()
+                        .withIgnoreCase()
+                        .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING));
+
+
+        return repository.findAll(example);
     }
 
 }
