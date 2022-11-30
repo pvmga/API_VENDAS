@@ -10,7 +10,6 @@ import com.vendas.vendas.Service.ClienteService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.BeanUtils;
@@ -27,16 +26,16 @@ public class ClienteController {
     private final ClienteService service;
 
     @GetMapping
-    public ResponseEntity buscar(
+    public ResponseEntity<?> buscar(
             @RequestParam(value = "nome", required = false) String nome,
-            @RequestParam(value = "email", required = false) String email,
-            @RequestParam(value = "id") UUID id
+            @RequestParam(value = "email", required = false) String email
+            //@RequestParam(value = "id") UUID id
         ) {
             // Validação para verificar se realmente existe usuário, pois é obrigatório preencher.
-            Optional<ClienteEntity> cliente = service.obterPorId(id);
+            /*Optional<ClienteEntity> cliente = service.obterPorId(id);
             if (!cliente.isPresent()) {
                 return ResponseEntity.badRequest().body("Não foi possível realizar a consulta. Id cliente não encontrado.");
-            }
+            }*/
 
             ClienteEntity clienteFiltro = new ClienteEntity();
             clienteFiltro.setNome(nome);
@@ -48,7 +47,7 @@ public class ClienteController {
     }
 
     @GetMapping("/{cpfcnpj}/outro-dados-cliente")
-    public ResponseEntity outroModoRetornaDadosCliente(@PathVariable(value = "cpfcnpj") String cpfcnpj) {
+    public ResponseEntity<?> outroModoRetornaDadosCliente(@PathVariable(value = "cpfcnpj") String cpfcnpj) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(service.retornaDadosCliente(cpfcnpj));
         }catch (RegraNegocioException e){
@@ -57,7 +56,7 @@ public class ClienteController {
     }
 
     @PostMapping("/dados-cliente")
-    public ResponseEntity retornaDadosCliente(@RequestBody ClienteDTO dto) {
+    public ResponseEntity<?> retornaDadosCliente(@RequestBody ClienteDTO dto) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(service.retornaDadosCliente(dto.getCpfCnpj()));
         }catch (RegraNegocioException e){
@@ -66,7 +65,7 @@ public class ClienteController {
     }
 
     @PostMapping
-    public ResponseEntity salvar(@RequestBody ClienteDTO dto) {
+    public ResponseEntity<?> salvar(@RequestBody ClienteDTO dto) {
 
         var cliente = new ClienteEntity();
         BeanUtils.copyProperties(dto, cliente);
@@ -79,7 +78,7 @@ public class ClienteController {
     }
 
     @PutMapping("{id}")
-    public ResponseEntity atualizar(@PathVariable("id") UUID id, @RequestBody ClienteDTO dto) {
+    public ResponseEntity<?> atualizar(@PathVariable("id") UUID id, @RequestBody ClienteDTO dto) {
         return service.obterPorId(id).map( entity -> {
 
             try {
@@ -90,34 +89,35 @@ public class ClienteController {
             }catch (RegraNegocioException e) {
                 return ResponseEntity.badRequest().body(e.getMessage());
             }
-        }).orElseGet( () -> new ResponseEntity("Cliente não encontrado para o Id informado.", HttpStatus.BAD_REQUEST));
+        }).orElseGet( () -> new ResponseEntity<>("Cliente não encontrado para o Id informado.", HttpStatus.BAD_REQUEST));
         
     }
 
     @DeleteMapping("{id}")
-    public ResponseEntity deletar(@PathVariable("id") UUID id) {
+    public ResponseEntity<?> deletar(@PathVariable("id") UUID id) {
         return service.obterPorId(id).map( entity -> {
             service.deletarCliente(entity);
-            return new ResponseEntity("Cliente removido com sucesso.", HttpStatus.OK);
+            return new ResponseEntity<>("Cliente removido com sucesso.", HttpStatus.OK);
             //return new ResponseEntity(HttpStatus.NO_CONTENT);
-        }).orElseGet( () -> new ResponseEntity("Cliente não encontrado para o Id informado.", HttpStatus.BAD_REQUEST));
+        }).orElseGet( () -> new ResponseEntity<>("Cliente não encontrado para o Id informado.", HttpStatus.BAD_REQUEST));
     }
 
     @PutMapping("{id}/atualizar-status")
-    public ResponseEntity atualizarStatus(@PathVariable("id") UUID id, @RequestBody AtualizaStatusDTO dto) {
+    public ResponseEntity<?> atualizarStatus(@PathVariable("id") UUID id, @RequestBody AtualizaStatusDTO dto) {
         return service.obterPorId(id).map( entity -> {
-            StatusCadastroEnum statusSelecionado = StatusCadastroEnum.valueOf(dto.getStatus());
-            if (statusSelecionado == null) {
-                return ResponseEntity.badRequest().body("Não foi possível atualizar o status do lançamento, envie um status válido.");
+            if (dto.getStatus() == "") {
+                //StatusCadastroEnum.values()
+                return ResponseEntity.badRequest().body("Não foi possível atualizar o status do Cliente, envie um status válido.");
+            } else {
+                try {
+                    StatusCadastroEnum statusSelecionado = StatusCadastroEnum.valueOf(dto.getStatus());
+                    entity.setStatus(statusSelecionado);
+                    service.atualizarCliente(entity);
+                    return ResponseEntity.ok(entity);
+                }catch (RegraNegocioException e) {
+                    return ResponseEntity.badRequest().body(e.getMessage());
+                }
             }
-            try {
-                entity.setStatus(statusSelecionado);
-                service.atualizarCliente(entity);
-                return ResponseEntity.ok(entity);
-            }catch (RegraNegocioException e) {
-                return ResponseEntity.badRequest().body(e.getMessage());
-            }
-        }).orElseGet( () -> new ResponseEntity("Cliente não encontrado para o Id informado.", HttpStatus.BAD_REQUEST));
+        }).orElseGet( () -> new ResponseEntity<>("Cliente não encontrado para o Id informado.", HttpStatus.BAD_REQUEST));
     }
-    
 }

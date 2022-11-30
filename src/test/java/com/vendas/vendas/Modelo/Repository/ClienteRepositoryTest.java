@@ -32,6 +32,15 @@ public class ClienteRepositoryTest {
     TestEntityManager entityManager;
 
     @Test
+    public void deveSalvarCliente() {
+        ClienteEntity cliente = criarCliente();
+
+        cliente = repository.save(cliente);
+
+        Assertions.assertThat(cliente.getId()).isNotNull();
+    }
+
+    @Test
     public void deveRetornarTrueQuandoExistirClienteCadastrado() {
         // cenário
         ClienteEntity cliente = criarCliente();

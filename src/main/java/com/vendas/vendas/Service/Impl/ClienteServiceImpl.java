@@ -97,7 +97,7 @@ public class ClienteServiceImpl implements ClienteService {
         // Segundo parametro é opcional
         // withIgnoreCase -> Tanto faz se o usuário passou em caixa alta ou baixa.
         // withStringMatcher -> Forma que irá buscar as informações no banco de dados "Encontrar todos os lançamentos que contenha a letra A no meio por exemplo"
-        Example example = Example.of(clienteFiltro,
+        Example<ClienteEntity> example = Example.of(clienteFiltro,
                 ExampleMatcher.matching()
                         .withIgnoreCase()
                         .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING));
