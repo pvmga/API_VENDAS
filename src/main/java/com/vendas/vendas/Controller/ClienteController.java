@@ -9,6 +9,8 @@ import com.vendas.vendas.Service.ClienteService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,6 +71,9 @@ public class ClienteController {
 
         var cliente = new ClienteEntity();
         BeanUtils.copyProperties(dto, cliente);
+
+        cliente.setDataCadastro(LocalDateTime.now(ZoneId.of("UTC")));
+        cliente.setStatus(StatusCadastroEnum.ATIVO); // PERSET DE QUE MEU CLIENTE SERÁ ATIVO AO CADASTRAR
 
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(service.salvarCliente(cliente));

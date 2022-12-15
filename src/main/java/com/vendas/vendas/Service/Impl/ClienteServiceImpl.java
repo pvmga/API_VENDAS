@@ -2,7 +2,6 @@ package com.vendas.vendas.Service.Impl;
 
 import com.vendas.vendas.Exception.RegraNegocioException;
 import com.vendas.vendas.Modelo.Entity.ClienteEntity;
-import com.vendas.vendas.Modelo.Enums.StatusCadastroEnum;
 import com.vendas.vendas.Modelo.Repository.ClienteRepository;
 import com.vendas.vendas.Service.ClienteService;
 
@@ -12,8 +11,6 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,8 +27,6 @@ public class ClienteServiceImpl implements ClienteService {
     @Override
     @Transactional
     public ClienteEntity salvarCliente(ClienteEntity cliente) {
-        cliente.setDataCadastro(LocalDateTime.now(ZoneId.of("UTC")));
-        cliente.setStatus(StatusCadastroEnum.ATIVO); // PERSET DE QUE MEU CLIENTE SERÁ ATIVO AO CADASTRAR
         validarJaExisteCpfCnpj(cliente.getCpfCnpj());
         validarDadosCliente(cliente);
         return repository.save(cliente);
