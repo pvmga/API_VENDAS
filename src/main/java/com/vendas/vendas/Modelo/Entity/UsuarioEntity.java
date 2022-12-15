@@ -28,6 +28,9 @@ public class UsuarioEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
+    @Column(nullable = false, length = 100)
+    private String nome;
+
     @Column(nullable = false, unique = true, length = 50)
     private String email;
 
