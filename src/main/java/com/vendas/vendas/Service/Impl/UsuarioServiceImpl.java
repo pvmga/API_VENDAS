@@ -1,7 +1,6 @@
 package com.vendas.vendas.Service.Impl;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,20 +21,6 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public UsuarioEntity autenticar(String email, String senha) {
-        Optional<UsuarioEntity> usuario = repository.findByEmail(email);
-
-        if (!usuario.isPresent()) {
-            throw new RegraNegocioException("Usuário não encontrado para o email informado.");
-        }
-        if (!usuario.get().getSenha().equals(senha)) {
-            throw new RegraNegocioException("Senha inválida.");
-        }
-
-        return usuario.get();
-    }
-
-    @Override
     @Transactional
     public UsuarioEntity salvarUsuario(UsuarioEntity usuario) {
         validarEmail(usuario.getEmail());
@@ -51,8 +36,17 @@ public class UsuarioServiceImpl implements UsuarioService {
     }
 
     @Override
-    public Optional<UsuarioEntity> obterPorId(UUID id) {
-        return repository.findById(id);
+    public UsuarioEntity autenticar(String email, String senha) {
+        Optional<UsuarioEntity> usuario = repository.findByEmail(email);
+
+        if (!usuario.isPresent()) {
+            throw new RegraNegocioException("Usuário não encontrado para o email informado.");
+        }
+        if (!usuario.get().getSenha().equals(senha)) {
+            throw new RegraNegocioException("Senha inválida.");
+        }
+
+        return usuario.get();
     }
-    
+
 }

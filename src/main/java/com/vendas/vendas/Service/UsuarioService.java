@@ -10,6 +10,4 @@ public interface UsuarioService {
 
     UsuarioEntity salvarUsuario(UsuarioEntity usuario);
     void validarEmail(String email);
-
-    Optional<UsuarioEntity> obterPorId(UUID id);
 }
