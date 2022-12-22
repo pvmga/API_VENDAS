@@ -1,8 +1,5 @@
 package com.vendas.vendas.Service;
 
-import java.util.Optional;
-import java.util.UUID;
-
 import com.vendas.vendas.Modelo.Entity.UsuarioEntity;
 
 public interface UsuarioService {

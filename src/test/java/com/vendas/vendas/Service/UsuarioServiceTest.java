@@ -1,5 +1,7 @@
 package com.vendas.vendas.Service;
 
+import java.util.Optional;
+
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -32,6 +34,7 @@ public class UsuarioServiceTest {
         Mockito.doNothing().when(service).validarEmail(Mockito.anyString());
 
         UsuarioEntity usuario = UsuarioRepositoryTest.criarUsuario();
+        
         // Quando chamar o método save passando qualquer usuário que seja, ele irá retornar o usuario.
         Mockito.when(repository.save(Mockito.any(UsuarioEntity.class))).thenReturn(usuario);
 
@@ -58,6 +61,72 @@ public class UsuarioServiceTest {
 
         // verificação
         Mockito.verify( repository, Mockito.never() ).save(usuario);
+    }
+
+    @Test
+    public void deveAutenticarUmUsuarioComSucesso() {
+        String email = "email@email.com";
+        String senha = "senha";
+
+        UsuarioEntity usuario = UsuarioEntity
+            .builder()
+            .email(email)
+            .senha(senha).build();
+        
+        Mockito.when( repository.findByEmail(email) ).thenReturn(Optional.of(usuario));
+
+        // acao
+        UsuarioEntity result = service.autenticar(email, senha);
+
+        // verificacao
+        Assertions.assertThat(result).isNotNull();
+    }
+
+    @Test
+    public void deveLanarErroQuandoNaoEncontrarOUsuarioCadastradoComOEmailInformado() {
+        // cenário retornar vazio
+        Mockito.when( repository.findByEmail(Mockito.anyString())).thenReturn(Optional.empty());
+
+        // acao de validação
+        Throwable exception = Assertions.catchThrowable( () -> service.autenticar("email@email.com", "senha"));
+
+        // Usuario não encontrado para o email informado
+        Assertions.assertThat(exception)
+            .isInstanceOf( RegraNegocioException.class )
+            .hasMessage("Usuário não encontrado para o email informado.");
+
+    }
+
+    @Test
+    public void deveLancarErroQuandoSenhaNaoBater() {
+        UsuarioEntity usuario = UsuarioEntity.builder().email("email@email.com").senha("senha").build();
+
+        Mockito.when( repository.findByEmail(Mockito.anyString()) ).thenReturn(Optional.of(usuario));
+
+        Throwable exception = Assertions.catchThrowable( () -> service.autenticar("email@email.com", "123") );
+
+        Assertions.assertThat(exception)
+            .isInstanceOf( RegraNegocioException.class )
+            .hasMessage("Senha inválida.");
+    }
+
+    @Test
+    public void deveValidarEmail() {
+
+        Mockito.when( repository.existsByEmail(Mockito.anyString())).thenReturn(false);
+
+        service.validarEmail("email@email.com");
+    }
+
+    @Test
+    public void deveLancarErroQuandoExistirEmailCadastrado() {
+        Mockito.when( repository.existsByEmail(Mockito.anyString())).thenReturn(true);
+
+        Throwable exception = Assertions.catchThrowable( () -> service.validarEmail("1") );
+
+        Assertions.assertThat(exception)
+            .isInstanceOf( RegraNegocioException.class )
+            .hasMessage("Já existe um usuário cadastrado com este email.");
     }
 
 }
